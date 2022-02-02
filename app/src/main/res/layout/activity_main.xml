@@ -9,8 +9,8 @@
 
     <TextView
         android:id="@+id/tv_labellat"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
+        android:layout_width="107dp"
+        android:layout_height="33dp"
         android:layout_marginStart="88dp"
         android:layout_marginTop="80dp"
         android:text="Lat:"
@@ -21,8 +21,8 @@
 
     <TextView
         android:id="@+id/tv_labellon"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
+        android:layout_width="112dp"
+        android:layout_height="37dp"
         android:layout_marginStart="88dp"
         android:layout_marginTop="156dp"
         android:text="Lon:"
@@ -34,8 +34,8 @@
         android:id="@+id/tv_labeltemp"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="76dp"
-        android:layout_marginTop="296dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="428dp"
         android:text="Temp:"
         android:textSize="20dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -70,5 +70,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.496" />
+
+    <TextView
+        android:id="@+id/timestamp1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.331" />
+
+    <TextView
+        android:id="@+id/timestamp2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.709" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
@@ -21,6 +22,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.Executor;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LocationService extends Service {
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -48,15 +55,42 @@ public class LocationService extends Service {
                 intent.putExtra("latitude", locationResult.getLastLocation().getLatitude());
                 intent.putExtra("longitude", locationResult.getLastLocation().getLongitude());
                 sendBroadcast(intent);
+                //postData(locationResult.getLastLocation().getLatitude() , locationResult.getLastLocation().getLongitude()) ;
             }
         };
+    }
+
+    private void postData(double latitude, double longitude) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://enap8kztggghjn2.m.pipedream.net")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+        DataModel model = new DataModel(latitude, longitude);
+        Call<DataModel> call = retrofitAPI.createPost(model);
+        call.enqueue(new Callback<DataModel>() {
+            @Override
+            public void onResponse(Call<DataModel> call, Response<DataModel> response) {
+                if(response.isSuccessful()){
+                    Toast.makeText(LocationService.this, "Data is added to API", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(LocationService.this, response.code(), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<DataModel> call, Throwable t) {
+                Toast.makeText(LocationService.this, "Error connecting to server", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         requestLocation();
-
-
         return super.onStartCommand(intent, flags, startId);
     }
 

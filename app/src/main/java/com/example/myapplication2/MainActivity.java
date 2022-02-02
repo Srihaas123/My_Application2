@@ -1,43 +1,49 @@
 package com.example.myapplication2;
 
+
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Location;
+
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.Calendar;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.PrecomputedText;
+import android.util.Log;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.BroadcastReceiver;
 
+import com.google.android.material.timepicker.TimeFormat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
-
-import java.util.ArrayList;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSIONS_FINE_LOCATION = 99;
-    TextView tv_lat, tv_lon, tv_temp;
+    TextView tv_lat, tv_lon, tv_temp, tv_timestamp1, tv_timestamp2;
     Switch sw1, sw2;
     LocationBroadcastReceiver receiver;
-    private IntentFilter mIntentFilter;
-
+    TempBroadcastReceiver receiver2;
 
     @SuppressLint("ObsoleteSdkInt")
     @Override
@@ -50,8 +56,15 @@ public class MainActivity extends AppCompatActivity {
         tv_temp = findViewById(R.id.tv_labeltemp);
         sw1 = findViewById(R.id.sw_GPS);
         sw2 = findViewById(R.id.sw_TEMP);
-        final Random myRandom = new Random();
+        tv_timestamp1 = findViewById(R.id.timestamp1);
+        tv_timestamp2 = findViewById(R.id.timestamp2);
 
+        receiver = new LocationBroadcastReceiver();
+        IntentFilter filter = new IntentFilter("ACT_LOC");
+        registerReceiver(receiver, filter);
+        receiver2 = new TempBroadcastReceiver();
+        IntentFilter filterTemp = new IntentFilter("TEMP");
+        registerReceiver(receiver2, filterTemp);
 
         if (Build.VERSION.SDK_INT >= 23) {
             if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -62,18 +75,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         if(sw1.isChecked()){
-                            LocationBroadcastReceiver receiver = new LocationBroadcastReceiver();
-                            IntentFilter filter = new IntentFilter("ACT_LOC");
-                            registerReceiver(receiver,filter);
-                            Intent intent = new Intent(MainActivity.this, LocationService.class);
-                            startService(intent);
+                            startLocService();
                         }
                         else{
-                            Intent intent = new Intent(MainActivity.this, LocationService.class);
-                            stopService(intent);
                             tv_lon.setText("Lon:");
                             tv_lat.setText("Lat:");
                         }
+
                     }
                 });
             }
@@ -83,44 +91,58 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if(sw1.isChecked()){
-                        LocationBroadcastReceiver receiver = new LocationBroadcastReceiver();
-                        IntentFilter filter = new IntentFilter("ACT_LOC");
-                        registerReceiver(receiver,filter);
-                        Intent intent = new Intent(MainActivity.this, LocationService.class);
-                        startService(intent);
-
+                        startLocService();
                     }
                     else{
-                        Intent intent = new Intent(MainActivity.this, LocationService.class);
-                        stopService(intent);
                         tv_lon.setText("Lon:");
                         tv_lat.setText("Lat:");
                     }
+
                 }
             });
         }
-
-
         sw2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(sw2.isChecked()){
-                    Random random = new Random();
-                    tv_temp.setText(String.valueOf(random.nextInt(31-20)+20));
+                    StartTempService();
                 }
                 else{
                     tv_temp.setText("Temp");
                 }
             }
         });
+    }
+
+    void startLocService() {
+
+        Intent intent = new Intent(MainActivity.this, LocationService.class);
+        startService(intent);
+    }
+    void StartTempService() {
+
+        Intent intent = new Intent(MainActivity.this, TempService.class);
+        startService(intent);
+    }
 
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocService();
+                } else {
+                    Toast.makeText(this, "Give me permissions", Toast.LENGTH_LONG).show();
+                }
+        }
     }
 
 
 
-
     public class LocationBroadcastReceiver extends BroadcastReceiver {
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals("ACT_LOC")){
@@ -128,13 +150,37 @@ public class MainActivity extends AppCompatActivity {
                 double longitude = intent.getDoubleExtra("longitude", 0f);
                 tv_lat.setText(String.valueOf(lat));
                 tv_lon.setText(String.valueOf(longitude));
-                Toast.makeText(MainActivity.this, "latitude is " +lat+ "longitude is " + longitude, Toast.LENGTH_SHORT).show();
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                tv_timestamp1.setText(String.valueOf(currentTime));
+                Toast.makeText(MainActivity.this, "lat is " +lat +" long is " + longitude, Toast.LENGTH_SHORT).show();
+            }
+
+
+            }
+
+        }
+
+        public class TempBroadcastReceiver extends BroadcastReceiver{
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.getAction().equals("TEMP")){
+                    double temp = intent.getDoubleExtra("Temp_reading", 0f);
+                    tv_temp.setText(String.valueOf(temp));
+                    String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                    tv_timestamp2.setText(String.valueOf(currentTime));
+                    Toast.makeText(MainActivity.this, "Temperature is " +temp, Toast.LENGTH_SHORT).show();
+                    Log.d("log", "run: Temp_reading is "+ temp);
+                }
+
             }
         }
+
+
     }
 
 
-}
+
 
 
 
