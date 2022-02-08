@@ -3,15 +3,15 @@ package com.example.myapplication2;
 
 
 public class TemperatureModel {
-    private double Temperature;
-    public TemperatureModel(double Temperature){
-        this.Temperature = Temperature;
+    private double temp_reading;
+    public TemperatureModel(double temp_reading){
+        this.temp_reading = temp_reading;
     }
-    public double getTemperature(){
-        return Temperature;
+    public double getTemp_reading(){
+        return temp_reading;
     }
-    public void setTemperature(double latitude){
-        this.Temperature = Temperature;
+    public void setTemp_reading(double temp_reading){
+        this.temp_reading = temp_reading;
 
     }
 }

@@ -5,6 +5,6 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface RetrofitAPI2 {
-    @POST("/")
+    @POST("temp/")
     Call<TemperatureModel> createPost(@Body TemperatureModel temperatureModel);//creating a method to post our data.
 }

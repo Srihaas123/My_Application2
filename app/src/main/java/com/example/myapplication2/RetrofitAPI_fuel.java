@@ -5,8 +5,8 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
-public interface RetrofitAPI {
+public interface RetrofitAPI_fuel {
     @POST("gps/")
-    Call<DataModel> createPost(@Body DataModel dataModel);//creating a method to post our data.
+    Call<FuelModel> createPost(@Body FuelModel fuelModel);//creating a method to post our data.
 
 }

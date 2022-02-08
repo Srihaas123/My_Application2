@@ -62,7 +62,7 @@ public class LocationService extends Service {
 
     private void postData(double latitude, double longitude) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://enap8kztggghjn2.m.pipedream.net")
+                .baseUrl("http://192.168.0.4/sensors/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);

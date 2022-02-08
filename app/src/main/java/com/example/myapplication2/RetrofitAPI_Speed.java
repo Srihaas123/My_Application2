@@ -1,12 +1,10 @@
 package com.example.myapplication2;
 
-
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
-public interface RetrofitAPI {
+public interface RetrofitAPI_Speed {
     @POST("gps/")
-    Call<DataModel> createPost(@Body DataModel dataModel);//creating a method to post our data.
-
+    Call<SpeedModel> createPost(@Body SpeedModel speedModel);//creating a method to post our data.
 }

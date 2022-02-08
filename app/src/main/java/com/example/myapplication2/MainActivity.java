@@ -40,10 +40,15 @@ import java.util.TimerTask;
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class MainActivity extends AppCompatActivity {
 
-    TextView tv_lat, tv_lon, tv_temp, tv_timestamp1, tv_timestamp2;
-    Switch sw1, sw2;
+    TextView tv_lat, tv_lon, tv_temp, tv_timestamp1, tv_timestamp2, tv_fuel, tv_timestamp3;
+    TextView tv_torque, tv_timestamp4, tv_tyre, tv_timestamp5, tv_speed, tv_timestamp6;
+    Switch sw1, sw2, sw3, sw4, sw5, sw6;
     LocationBroadcastReceiver receiver;
     TempBroadcastReceiver receiver2;
+    FuelBroadcastReceiver receiver3;
+    TorqueBroadcastReceiver receiver4;
+    TyreBroadcastReceiver receiver5;
+    SpeedBroadcastReceiver receiver6;
 
     @SuppressLint("ObsoleteSdkInt")
     @Override
@@ -54,17 +59,48 @@ public class MainActivity extends AppCompatActivity {
         tv_lat = findViewById(R.id.tv_labellat);
         tv_lon = findViewById(R.id.tv_labellon);
         tv_temp = findViewById(R.id.tv_labeltemp);
+        tv_fuel = findViewById(R.id.tv_labelfuel);
+        tv_torque = findViewById(R.id.tv_labeltorque);
+        tv_tyre = findViewById(R.id.tv_labeltyre);
+        tv_speed = findViewById(R.id.tv_labelspeed);
+
         sw1 = findViewById(R.id.sw_GPS);
         sw2 = findViewById(R.id.sw_TEMP);
+        sw3 = findViewById(R.id.sw_FUEL);
+        sw4 = findViewById(R.id.sw_TORQUE);
+        sw5 = findViewById(R.id.sw_TYRE);
+        sw6 = findViewById(R.id.sw_SPEED);
+
         tv_timestamp1 = findViewById(R.id.timestamp1);
         tv_timestamp2 = findViewById(R.id.timestamp2);
+        tv_timestamp3 = findViewById(R.id.timestamp3);
+        tv_timestamp4 = findViewById(R.id.timestamp4);
+        tv_timestamp5 = findViewById(R.id.timestamp5);
+        tv_timestamp6 = findViewById(R.id.timestamp6);
 
         receiver = new LocationBroadcastReceiver();
         IntentFilter filter = new IntentFilter("ACT_LOC");
         registerReceiver(receiver, filter);
+
         receiver2 = new TempBroadcastReceiver();
         IntentFilter filterTemp = new IntentFilter("TEMP");
         registerReceiver(receiver2, filterTemp);
+
+        receiver3 = new FuelBroadcastReceiver();
+        IntentFilter filterFuel = new IntentFilter("FUEL");
+        registerReceiver(receiver3, filterFuel);
+
+        receiver4 = new TorqueBroadcastReceiver();
+        IntentFilter filterTorque = new IntentFilter("TORQUE");
+        registerReceiver(receiver4,filterTorque);
+
+        receiver5 = new TyreBroadcastReceiver();
+        IntentFilter filterTyre = new IntentFilter("TYRE");
+        registerReceiver(receiver5, filterTyre);
+
+        receiver6 = new SpeedBroadcastReceiver();
+        IntentFilter filterSpeed = new IntentFilter("SPEED");
+        registerReceiver(receiver6,filterSpeed);
 
         if (Build.VERSION.SDK_INT >= 23) {
             if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -106,13 +142,59 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(sw2.isChecked()){
                     StartTempService();
-                }
+                        }
                 else{
                     tv_temp.setText("Temp");
                 }
             }
         });
+        sw3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(sw3.isChecked()){
+                    StartFuelService();
+                }
+                else{
+                    tv_fuel.setText("Fuel");
+                }
+            }
+        });
+        sw4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(sw4.isChecked()){
+                    StartTorqueService();
+                }
+                else{
+                    tv_torque.setText("Torque");
+                }
+            }
+        });
+        sw5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(sw5.isChecked()){
+                    StartTyrePressService();
+                }
+                else{
+                    tv_tyre.setText("TyrePress");
+                }
+            }
+        });
+        sw6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(sw6.isChecked()){
+                    StartSpeedService();
+                }
+                else{
+                    tv_speed.setText("Speed");
+                }
+            }
+        });
+
     }
+
 
     void startLocService() {
 
@@ -122,6 +204,24 @@ public class MainActivity extends AppCompatActivity {
     void StartTempService() {
 
         Intent intent = new Intent(MainActivity.this, TempService.class);
+        startService(intent);
+    }
+    void StartFuelService(){
+
+        Intent intent = new Intent(MainActivity.this, FuelService.class);
+        startService(intent);
+
+    }
+    void StartTorqueService(){
+        Intent intent = new Intent(MainActivity.this, TorqueService.class);
+        startService(intent);
+    }
+    void StartTyrePressService(){
+        Intent intent = new Intent(MainActivity.this, TyrePressureService.class);
+        startService(intent);
+    }
+    void StartSpeedService(){
+        Intent intent = new Intent(MainActivity.this, SpeedService.class);
         startService(intent);
     }
 
@@ -170,11 +270,71 @@ public class MainActivity extends AppCompatActivity {
                     String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
                     tv_timestamp2.setText(String.valueOf(currentTime));
                     Toast.makeText(MainActivity.this, "Temperature is " +temp, Toast.LENGTH_SHORT).show();
-                    Log.d("log", "run: Temp_reading is "+ temp);
+                    Log.d("logt", "run: Temp_reading is "+ temp);
+
                 }
 
             }
         }
+    public class FuelBroadcastReceiver extends BroadcastReceiver{
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("FUEL")){
+                int fuel = (int) intent.getIntExtra("fuel", 0);
+                tv_fuel.setText(String.valueOf(fuel));
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                tv_timestamp3.setText(String.valueOf(currentTime));
+                Toast.makeText(MainActivity.this, "Fuel : " +fuel, Toast.LENGTH_SHORT).show();
+                Log.d("logf", "run: Fuel: "+ fuel);
+            }
+
+        }
+    }
+
+    public class TorqueBroadcastReceiver extends BroadcastReceiver{
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("TORQUE")){
+                int torque = (int) intent.getIntExtra("torque",0);
+                tv_torque.setText(String.valueOf(torque));
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                tv_timestamp4.setText(String.valueOf(currentTime));
+                Toast.makeText(MainActivity.this, "Torque : " +torque, Toast.LENGTH_SHORT).show();
+                Log.d("logto","run: Torque: "+ torque);
+            }
+        }
+    }
+
+    public class TyreBroadcastReceiver extends BroadcastReceiver{
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("TYRE")){
+                int tyre =  intent.getIntExtra("tyre",0);
+                tv_tyre.setText(String.valueOf(tyre));
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                tv_timestamp5.setText(String.valueOf(currentTime));
+                Toast.makeText(MainActivity.this, "Tyre Pressure : " +tyre, Toast.LENGTH_SHORT).show();
+                Log.d("logto","run: Torque: "+ tyre);
+            }
+        }
+    }
+
+    public class SpeedBroadcastReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("SPEED")){
+                int speed = intent.getIntExtra("speed", 0);
+                tv_speed.setText(String.valueOf(speed));
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                tv_timestamp6.setText(String.valueOf(currentTime));
+                Toast.makeText(MainActivity.this, "Speed: " +speed, Toast.LENGTH_SHORT).show();
+                Log.d("logsp","run: Speed: "+ speed);
+            }
+        }
+    }
 
 
     }

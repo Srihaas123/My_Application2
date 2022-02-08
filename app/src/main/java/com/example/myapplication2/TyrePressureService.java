@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,8 +17,10 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class TempService extends Service {
-    Random random;
+public class TyrePressureService extends Service {
+
+    int current_val = 150;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -30,63 +31,56 @@ public class TempService extends Service {
     public void onCreate() {
         super.onCreate();
         Timer timer = new Timer();
-        random = new Random();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                //what you want to do
-
-                Intent intent = new Intent("TEMP");
-                intent.putExtra("Temp_reading", Temp());
+                TyrePress();
+                Intent intent = new Intent("TYRE");
+                intent.putExtra("tyre", current_val);
                 sendBroadcast(intent);
-                //postData1(Temp());
-
+                //postData4(current_val);
             }
-        }, 0, 5000);//wait 0 ms before doing the action and do it evry 1000ms (1second)
+        },0,5000);
 
     }
-    private void postData1(double temp_reading) {
+
+    private void postData4(int Tyre_pressure) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://192.168.0.4/sensors/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        RetrofitAPI2 retrofitAPI2 = retrofit.create(RetrofitAPI2.class);
-        TemperatureModel model = new TemperatureModel(temp_reading);
-        Call<TemperatureModel> call = retrofitAPI2.createPost(model);
-        call.enqueue(new Callback<TemperatureModel>() {
+        RetrofitAPI_Tyre retrofitAPI_tyre = retrofit.create(RetrofitAPI_Tyre.class);
+        TyrePressureModel model = new TyrePressureModel(Tyre_pressure);
+        Call<TyrePressureModel> call = retrofitAPI_tyre.createPost(model);
+        call.enqueue(new Callback<TyrePressureModel>() {
             @Override
-            public void onResponse(Call<TemperatureModel> call, Response<TemperatureModel> response) {
+            public void onResponse(Call<TyrePressureModel> call, Response<TyrePressureModel> response) {
                 if(response.isSuccessful()){
-                    Toast.makeText(TempService.this, "Data is added to API", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TyrePressureService.this, "Data is added to API", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Toast.makeText(TempService.this, response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TyrePressureService.this, response.code(), Toast.LENGTH_SHORT).show();
                 }
 
             }
 
             @Override
-            public void onFailure(Call<TemperatureModel> call, Throwable t) {
-                Toast.makeText(TempService.this, "Error connecting to server", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<TyrePressureModel> call, Throwable t) {
+                Toast.makeText(TyrePressureService.this, "Error connecting to server", Toast.LENGTH_SHORT).show();
                 Log.d("log1", t.getMessage());
 
             }
         });
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Temp();
+        TyrePress();
         return super.onStartCommand(intent, flags, startId);
     }
 
-
-
-    private double Temp(){
-        Random random = new Random();
-        double val = random.nextInt(96-65)+65;
-        return val;
-
+    public void TyrePress(){
+        if(current_val>130)
+            current_val = Randomizer.decrement( current_val,1);
     }
 }
